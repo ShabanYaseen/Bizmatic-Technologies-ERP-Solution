@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:bizmatic_solutions/Components/Colors.dart';
 import 'package:bizmatic_solutions/Components/Fonts.dart';
 import 'package:bizmatic_solutions/Components/Search_bar.dart';
+import 'package:bizmatic_solutions/Models/Chat_Model.dart';
+import 'package:bizmatic_solutions/Models/Quick_question_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -286,8 +288,6 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: AppColors.Background,
@@ -358,7 +358,7 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
                           return ChatBubble(
                             message: chat['message'],
                             isUser: chat['isUser'],
-                            timestamp: chat['timestamp'],
+                            timestamp: chat['timestamp'], isAgentLoggedIn: false,
                           );
                         },
                       ),
@@ -412,100 +412,7 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
   }
 }
 
-class ChatBubble extends StatelessWidget {
-  final String message;
-  final bool isUser;
-  final DateTime? timestamp;
-
-  const ChatBubble({
-    super.key,
-    required this.message,
-    required this.isUser,
-    this.timestamp,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          if (!isUser)
-            const CircleAvatar(
-              radius: 14,
-              backgroundColor: AppColors.primary,
-              child: Icon(Icons.smart_toy, size: 16, color: Colors.white),
-            ),
-          Flexible(
-            child: Container(
-              margin: EdgeInsets.only(
-                left: isUser ? 48 : 8,
-                right: isUser ? 8 : 48,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: isUser ? AppColors.primary : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message,
-                    style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                    ),
-                  ),
-                  if (timestamp != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        _formatTime(timestamp!),
-                        style: TextStyle(
-                          color: isUser ? Colors.white70 : Colors.black54,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (isUser)
-            const CircleAvatar(
-              radius: 14,
-              backgroundColor: AppColors.primary,
-              child: Icon(Icons.person, size: 16, color: Colors.white),
-            ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime timestamp) {
-    return '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
-  }
-}
-
+//Typing Indicator for Customer and Chatbot conversation
 class TypingIndicator extends StatelessWidget {
   const TypingIndicator({super.key});
 
@@ -553,72 +460,3 @@ class TypingIndicator extends StatelessWidget {
   }
 }
 
-class PredefinedQuestions extends StatelessWidget {
-  final List<String> questions;
-  final Function(String) onQuestionSelected;
-
-  const PredefinedQuestions({
-    super.key,
-    required this.questions,
-    required this.onQuestionSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Quick questions about this product:",
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-          ...questions.map((question) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: InkWell(
-                  onTap: () => onQuestionSelected(question),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      question,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-}

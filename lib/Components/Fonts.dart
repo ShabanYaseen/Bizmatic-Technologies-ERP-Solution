@@ -59,4 +59,6 @@ class ResponsiveTextStyles {
       decoration: TextDecoration.none,
     );
   }
+
+  static caption(BuildContext context) {}
 }

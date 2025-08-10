@@ -2,7 +2,7 @@ import 'package:bizmatic_solutions/Components/Fonts.dart';
 import 'package:bizmatic_solutions/Components/Colors.dart';
 import 'package:bizmatic_solutions/Documentation/Doc_main.dart';
 import 'package:bizmatic_solutions/FearureList/Feature_List.dart';
-import 'package:bizmatic_solutions/Screens/Product_Selection_Screen_for_Chat.dart';
+import 'package:bizmatic_solutions/Screens/Customer/Product_Selection_Screen_for_Chat.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,10 +34,9 @@ class _HomeScreenState extends State<HomeScreen>
     _backgroundColor = ColorTween(
       begin: const Color(0xFF0D47A1),
       end: const Color(0xFF42A5F5),
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -53,10 +52,7 @@ class _HomeScreenState extends State<HomeScreen>
       );
       return;
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => screen),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => screen));
   }
 
   @override
@@ -93,10 +89,9 @@ class _HomeScreenState extends State<HomeScreen>
                 const SizedBox(height: 8),
                 Text(
                   "How can we help you?",
-                  style: ResponsiveTextStyles.body(context).copyWith(
-                    color: Colors.white70,
-                    fontSize: 18,
-                  ),
+                  style: ResponsiveTextStyles.body(
+                    context,
+                  ).copyWith(color: Colors.white70, fontSize: 18),
                 ),
                 const SizedBox(height: 40),
                 Expanded(
@@ -105,31 +100,38 @@ class _HomeScreenState extends State<HomeScreen>
                       _buildStyledButton(
                         text: "Chat with us",
                         icon: Icons.chat,
-                        onPressed: () => _handleNavigation(
-                          ProductSelectionScreenforChat(
-                            customerId: widget.customerId!,
-                            restaurantName: widget.restaurantName!,
-                          ),
-                        ),
+                        onPressed:
+                            () => _handleNavigation(
+                              ProductSelectionScreenforChat(
+                                customerId: widget.customerId!,
+                                restaurantName: widget.restaurantName!,
+                              ),
+                            ),
                       ),
                       SizedBox(height: screenHeight * 0.03),
                       _buildStyledButton(
                         text: "Documentation",
                         icon: Icons.book,
-                        onPressed: () => _handleNavigation(
-                          Doc_mainScreen(
-                            customerId: widget.customerId!,
-                            restaurantName: widget.restaurantName!,
-                          ),
-                        ),
+                        onPressed:
+                            () => _handleNavigation(
+                              Doc_mainScreen(
+                                customerId: widget.customerId!,
+                                restaurantName: widget.restaurantName!,
+                              ),
+                            ),
                       ),
                       SizedBox(height: screenHeight * 0.03),
                       _buildStyledButton(
                         text: "Feature List",
                         icon: Icons.featured_play_list,
-                        onPressed: () => _handleNavigation(
-                          FeatureList(),
-                        ),
+                        onPressed:
+                            () => _handleNavigation(
+                              FeatureList(
+                                customerId: widget.customerId!,
+                                customerName: widget.restaurantName!,
+                                customerEmail: 'bizmaticshaban@gmail.com',
+                              ),
+                            ),
                       ),
                     ],
                   ),
@@ -153,9 +155,7 @@ class _HomeScreenState extends State<HomeScreen>
         foregroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       onPressed: onPressed,
       child: Row(
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen>
               style: ResponsiveTextStyles.body(context).copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: AppColors.primary
+                color: AppColors.primary,
               ),
             ),
           ),

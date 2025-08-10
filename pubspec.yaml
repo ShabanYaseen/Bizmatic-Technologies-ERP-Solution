@@ -38,6 +38,7 @@ dependencies:
   uuid: ^3.0.6
   url_launcher: ^6.2.5
   cupertino_icons: ^1.0.8
+  mailer: ^6.5.0
 
 flutter_launcher_icons:
   android: "launcher_icon"

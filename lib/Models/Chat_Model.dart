@@ -4,80 +4,104 @@ import 'package:flutter/material.dart';
 class ChatBubble extends StatelessWidget {
   final String message;
   final bool isUser;
+  final DateTime? timestamp;
   final bool isAgentLoggedIn;
 
   const ChatBubble({
     super.key,
     required this.message,
     required this.isUser,
-    required this.isAgentLoggedIn, required timestamp,
+    this.timestamp,
+    required this.isAgentLoggedIn,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Get correct avatar widget based on type
-    Widget getCustomerAvatar() {
-      return CircleAvatar(
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.person, color: AppColors.Background),
-      );
-    }
+    // Determine which avatar to show
+    Widget avatar = isAgentLoggedIn
+        ? const CircleAvatar(
+            radius: 14,
+            backgroundColor: AppColors.primary,
+            child: Icon(Icons.person, size: 16, color: Colors.white),
+          )
+        : isUser
+            ? const CircleAvatar(
+                radius: 14,
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.person, size: 16, color: Colors.white),
+              )
+            : const CircleAvatar(
+                radius: 14,
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.smart_toy, size: 16, color: Colors.white),
+              );
 
-    Widget getAgentAvatar() {
-      return CircleAvatar(
-        backgroundColor: Colors.grey[400],
-        child: Image.asset("Assets/Main_Logo/Logo.png", height: 30, width: 30),
-      );
-    }
-
-    // Decide which avatar to show for current message
-    final avatar = () {
-      if (isAgentLoggedIn) {
-        return isUser ? getAgentAvatar() : getCustomerAvatar();
-      } else {
-        return isUser ? getCustomerAvatar() : getAgentAvatar();
-      }
-    }();
-
-    return Row(
-      mainAxisAlignment:
-          isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isUser) ...[avatar, const SizedBox(width: 8)],
-        Flexible(
-          child: Align(
-            alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isUser) avatar,
+          Flexible(
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+              margin: EdgeInsets.only(
+                left: isUser ? 48 : 8,
+                right: isUser ? 8 : 48,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
               decoration: BoxDecoration(
-                color: isUser ? AppColors.primary : Colors.grey[300],
+                color: isUser ? AppColors.primary : Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
-                  bottomLeft:
-                      isUser
-                          ? const Radius.circular(16)
-                          : const Radius.circular(0),
-                  bottomRight:
-                      isUser
-                          ? const Radius.circular(0)
-                          : const Radius.circular(16),
+                  bottomLeft: Radius.circular(isUser ? 16 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: isUser ? Colors.white : Colors.black,
-                  fontSize: 16,
-                ),
+              child: Column(
+                crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: isUser ? Colors.white : Colors.black87,
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (timestamp != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        _formatTime(timestamp!),
+                        style: TextStyle(
+                          color: isUser ? Colors.white70 : Colors.black54,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-        ),
-        if (isUser) ...[const SizedBox(width: 8), avatar],
-      ],
+          if (isUser) avatar,
+        ],
+      ),
     );
+  }
+
+  String _formatTime(DateTime timestamp) {
+    return '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
   }
 }

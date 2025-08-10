@@ -25,9 +25,9 @@ class _Doc_mainScreenState extends State<Doc_mainScreen> {
     ProductDocumentation(
       name: "Butter POS",
       documents: [
-        Document(name: "User Manual", url: "https://www.google.com"),
+        Document(name: "Official Web", url: "https://butterpos.com/"),
         Document(
-          name: "Installation Guide",
+          name: "Quick Guide",
           url: "https://docs.google.com/document/d/1crBn-Q2ehyDFcl-HQ1SMv85QniJXuQwu/view",
         ),
       ],
@@ -36,8 +36,8 @@ class _Doc_mainScreenState extends State<Doc_mainScreen> {
       name: "Gofrugal ServEasy",
       documents: [
         Document(
-          name: "Admin Guide",
-          url: "https://docs.google.com/document/d/1crBn-Q2ehyDFcl-HQ1SMv85QniJXuQwu/view",
+          name: "Serveasy Book",
+          url: "https://help.serveeasy.gofrugal.com/",
         ),
       ],
     ),
@@ -45,8 +45,8 @@ class _Doc_mainScreenState extends State<Doc_mainScreen> {
       name: "Gofrugal RetailEasy",
       documents: [
         Document(
-          name: "Quick Start Guide",
-          url: "https://docs.google.com/document/d/1KuiY9PZLcq0yKXPmKSGOp1X_KPXlnBSL/view",
+          name: "RetailEasy Book",
+          url: "https://help.retaileasy.gofrugal.com/",
         ),
       ],
     ),
@@ -54,8 +54,8 @@ class _Doc_mainScreenState extends State<Doc_mainScreen> {
       name: "Odoo",
       documents: [
         Document(
-          name: "Quick Start Guide",
-          url: "https://docs.google.com/document/d/1KuiY9PZLcq0yKXPmKSGOp1X_KPXlnBSL/view",
+          name: "Odoo Master Book",
+          url: "https://www.odoo.com/slides",
         ),
       ],
     ),

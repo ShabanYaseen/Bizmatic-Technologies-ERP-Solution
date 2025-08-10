@@ -1,4 +1,4 @@
-import 'package:bizmatic_solutions/Screens/Splash_Screen.dart';
+import 'package:bizmatic_solutions/Screens/Customer/Splash_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

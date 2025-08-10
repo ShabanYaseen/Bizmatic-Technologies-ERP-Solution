@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bizmatic_solutions/Components/Fonts.dart';
 import 'package:bizmatic_solutions/Components/Search_bar.dart';
 import 'package:bizmatic_solutions/Components/colors.dart';
 import 'package:bizmatic_solutions/Models/Chat_Model.dart';
@@ -30,6 +31,7 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
   StreamSubscription<QuerySnapshot>? _messageSubscription;
   bool _isDisposed = false;
   bool _greetingSent = false;
+  Set<String> _processedMessageIds = {}; // Track processed message IDs
 
   @override
   void initState() {
@@ -41,6 +43,7 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
   void dispose() {
     _isDisposed = true;
     _messageSubscription?.cancel();
+    _processedMessageIds.clear();
     super.dispose();
   }
 
@@ -52,78 +55,100 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
         .orderBy("timestamp", descending: false)
         .get()
         .then((snapshot) {
-      if (_isDisposed) return;
+          if (_isDisposed) return;
 
-      // Check for existing greeting message
-      final existingMessages = snapshot.docs.map((doc) {
-        final message = doc.data();
-        return {
-          'message': message['text'],
-          'isUser': message['sender'] == widget.agentId,
-        };
-      }).toList();
+          // Check for existing greeting message
+          final existingMessages =
+              snapshot.docs.map((doc) {
+                final message = doc.data();
+                _processedMessageIds.add(doc.id); // Track existing messages
+                return {
+                  'message': message['text'],
+                  'isUser': message['sender'] == widget.agentId,
+                  'id': doc.id, // Store document ID
+                };
+              }).toList();
 
-      // Check if greeting was already sent
-      _greetingSent = existingMessages.any((msg) => 
-          !msg['isUser'] && msg['message'] == "Hello from Bizmatic Technologies! How can I help you today?");
+          // Check if greeting was already sent
+          _greetingSent = existingMessages.any(
+            (msg) =>
+                !msg['isUser'] &&
+                msg['message'] ==
+                    "Hello from Bizmatic Technologies! How can I help you today?",
+          );
 
-      setState(() {
-        chatMessages = existingMessages;
-      });
+          setState(() {
+            chatMessages = existingMessages;
+          });
 
-      _listenForNewMessages();
-    });
+          _listenForNewMessages();
+        });
   }
 
   void _listenForNewMessages() {
-  _messageSubscription = FirebaseFirestore.instance
-      .collection("Chats")
-      .doc(widget.chatId)
-      .collection("messages")
-      .orderBy("timestamp", descending: false)
-      .snapshots()
-      .listen((snapshot) {
-    if (_isDisposed) return;
+    _messageSubscription = FirebaseFirestore.instance
+        .collection("Chats")
+        .doc(widget.chatId)
+        .collection("messages")
+        .orderBy("timestamp", descending: false)
+        .snapshots()
+        .listen((snapshot) {
+          if (_isDisposed) return;
 
-    for (var change in snapshot.docChanges) {
-      if (change.type == DocumentChangeType.added) {
-        final message = change.doc.data() as Map<String, dynamic>;
-        
-        // First check if this is a customer message
-        if (message['sender'] != widget.agentId) {
-          // Then check if it's a request to talk with agent
-          final text = message['text'].toLowerCase();
-          final isAgentRequest = text.contains('talk with agent') || 
-                               text.contains('talk to agent');
-          
-          if (isAgentRequest && !_greetingSent) {
-            _greetingSent = true;
-            _sendGreetingMessage();
+          for (var change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              final message = change.doc.data() as Map<String, dynamic>;
+              final messageId = change.doc.id;
+
+              // Skip if we've already processed this message
+              if (_processedMessageIds.contains(messageId)) continue;
+
+              _processedMessageIds.add(messageId); // Mark as processed
+
+              // First check if this is a customer message
+              if (message['sender'] != widget.agentId) {
+                // Then check if it's a request to talk with agent
+                final text = message['text'].toLowerCase();
+                final isAgentRequest =
+                    text.contains('talk with agent') ||
+                    text.contains('talk to agent') ||
+                    text.contains('speak with agent') ||
+                    text.contains('speak to agent');
+
+                if (isAgentRequest && !_greetingSent) {
+                  _greetingSent = true;
+                  _sendGreetingMessage();
+                }
+              }
+
+              setState(() {
+                chatMessages.add({
+                  'message': message['text'],
+                  'isUser': message['sender'] == widget.agentId,
+                  'id': messageId,
+                });
+              });
+            }
           }
-        }
 
-        setState(() {
-          chatMessages.add({
-            'message': message['text'],
-            'isUser': message['sender'] == widget.agentId,
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.jumpTo(
+                _scrollController.position.maxScrollExtent,
+              );
+            }
           });
         });
-      }
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
-  });
-}
+  }
 
   Future<void> _sendGreetingMessage() async {
-    final greetingMessage = "Hello from Bizmatic Technologies! How can I help you today?";
-    
+    final greetingMessage =
+        "Hello from Bizmatic Technologies! How can I help you today?";
+
     try {
-      final chatRef = FirebaseFirestore.instance.collection("Chats").doc(widget.chatId);
+      final chatRef = FirebaseFirestore.instance
+          .collection("Chats")
+          .doc(widget.chatId);
 
       final messageData = {
         'text': greetingMessage,
@@ -145,7 +170,9 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
     if (text.trim().isEmpty) return;
 
     try {
-      final chatRef = FirebaseFirestore.instance.collection("Chats").doc(widget.chatId);
+      final chatRef = FirebaseFirestore.instance
+          .collection("Chats")
+          .doc(widget.chatId);
 
       final messageData = {
         'text': text,
@@ -180,6 +207,7 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
       setState(() {
         chatMessages.clear();
         _greetingSent = false;
+        _processedMessageIds.clear();
       });
 
       Navigator.pop(context);
@@ -195,15 +223,20 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.Background,
       appBar: AppBar(
-        title: Text(widget.restaurantName),
-        actions: [
-          IconButton(icon: Icon(Icons.call_end), onPressed: _endChat),
-        ],
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          widget.restaurantName,
+          style: ResponsiveTextStyles.title(
+            context,
+          ).copyWith(color: AppColors.white),
+        ),
+        actions: [IconButton(icon: Icon(Icons.done_all), onPressed: _endChat)],
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: screenHeight * 0.03,
-          vertical: screenWidth * 0.09,
+          vertical: screenWidth * 0.05,
         ),
         child: Column(
           children: [
@@ -222,8 +255,9 @@ class _AgentChatScreenState extends State<AgentChatScreen> {
                 },
               ),
             ),
+            const Divider(height: 1),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
               child: MySearchBar(
                 controller: _controller,
                 hintText: "Type your message...",

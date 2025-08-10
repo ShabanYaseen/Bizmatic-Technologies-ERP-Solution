@@ -1,5 +1,7 @@
+import 'package:bizmatic_solutions/Components/Fonts.dart';
 import 'package:bizmatic_solutions/Components/colors.dart';
-import 'package:bizmatic_solutions/Screens/Agentchatscreen.dart';
+import 'package:bizmatic_solutions/Screens/Agents/Agent_feature_request_handaling.dart';
+import 'package:bizmatic_solutions/Screens/Agents/Agentchatscreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -22,19 +24,17 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
   void initState() {
     super.initState();
     // Mark agent as available when they log in
-    FirebaseFirestore.instance
-        .collection('Agents')
-        .doc(widget.agentId)
-        .update({'isAvailable': true});
+    FirebaseFirestore.instance.collection('Agents').doc(widget.agentId).update({
+      'isAvailable': true,
+    });
   }
 
   @override
   void dispose() {
     // Mark agent as unavailable when they log out
-    FirebaseFirestore.instance
-        .collection('Agents')
-        .doc(widget.agentId)
-        .update({'isAvailable': false});
+    FirebaseFirestore.instance.collection('Agents').doc(widget.agentId).update({
+      'isAvailable': false,
+    });
     super.dispose();
   }
 
@@ -43,20 +43,18 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.Background,
       appBar: AppBar(
-        title: Text(
-          widget.agentName,
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text(widget.agentName, style: ResponsiveTextStyles.title(context).copyWith(color: AppColors.white)),
         backgroundColor: AppColors.primary,
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("Chats")
-            .where('agentId', isEqualTo: widget.agentId)
-            .where('status', isEqualTo: 'active')
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
+        stream:
+            FirebaseFirestore.instance
+                .collection("Chats")
+                .where('agentId', isEqualTo: widget.agentId)
+                .where('status', isEqualTo: 'active')
+                .orderBy('timestamp', descending: true)
+                .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -91,12 +89,13 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => AgentChatScreen(
-                          chatId: chatId,
-                          customerId: customerId,
-                          restaurantName: restaurantName,
-                          agentId: widget.agentId,
-                        ),
+                        builder:
+                            (_) => AgentChatScreen(
+                              chatId: chatId,
+                              customerId: customerId,
+                              restaurantName: restaurantName,
+                              agentId: widget.agentId,
+                            ),
                       ),
                     );
                   },
@@ -152,6 +151,18 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                 ),
               );
             },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.featured_play_list, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AgentFeatureRequests(agentId: widget.agentId , agentName: widget.agentName,),
+            ), // your page
           );
         },
       ),

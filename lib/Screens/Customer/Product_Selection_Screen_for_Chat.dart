@@ -1,7 +1,7 @@
 import 'package:bizmatic_solutions/Components/Colors.dart';
 import 'package:bizmatic_solutions/Components/Fonts.dart';
 import 'package:bizmatic_solutions/Components/Product_Selection_Button.dart';
-import 'package:bizmatic_solutions/Screens/Customerchatscreen.dart';
+import 'package:bizmatic_solutions/Screens/Customer/CustomerChatScreen.dart';
 import 'package:flutter/material.dart';
 
 class ProductSelectionScreenforChat extends StatefulWidget {
@@ -96,7 +96,7 @@ class _ProductSelectionScreenforChatState
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Customerchatscreen(
+            builder: (context) => CustomerChatScreen(
               productNameforChat: productName,
               customerId: widget.customerId,
               restaurantName: widget.restaurantName,

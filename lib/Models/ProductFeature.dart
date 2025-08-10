@@ -25,9 +25,13 @@ class FeatureGroup {
 class FeatureItem {
   final String name;
   final List<String> availableInVersions;
+  final String? description;       // Optional field for extra info
+  final List<String>? specifications; // Optional field for detailed specs
 
   FeatureItem({
     required this.name,
     required this.availableInVersions,
+    this.description,
+    this.specifications,
   });
 }
