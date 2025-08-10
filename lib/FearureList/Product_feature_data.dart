@@ -1,6 +1,6 @@
 
 // ==========================
-// 🗂 Product Feature Data
+// Product Feature Data
 // ==========================
 
 import 'package:bizmatic_solutions/Models/ProductFeature.dart';

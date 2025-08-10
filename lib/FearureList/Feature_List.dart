@@ -12,7 +12,7 @@ import '../Components/Fonts.dart';
 import 'package:bizmatic_solutions/Models/ProductFeature.dart';
 
 // ==========================
-// 📋 Feature List Widget
+// Feature List Widget
 // ==========================
 class FeatureList extends StatefulWidget {
   final String customerId;
