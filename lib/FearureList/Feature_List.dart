@@ -300,7 +300,7 @@ Customer Email: ${widget.customerEmail}
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AppColors.Black),),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(

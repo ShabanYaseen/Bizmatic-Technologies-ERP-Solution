@@ -4,10 +4,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ Initialize bindings
+  WidgetsFlutterBinding.ensureInitialized(); // Initialize bindings
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  ); // ✅ Await Firebase initialization
+  ); // Await Firebase initialization
 
   runApp(const MyApp());
 }
