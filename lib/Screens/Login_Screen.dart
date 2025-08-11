@@ -17,6 +17,9 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   TextEditingController userNameController = TextEditingController();
   TextEditingController userIdController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+
+  String? loginType; // "Customer" or "Agent"
 
   late AnimationController _animationController;
   late Animation<Color?> _color1;
@@ -26,13 +29,11 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
 
-    // Animation controller for gradient background
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
     )..repeat(reverse: true);
 
-    // Color transitions
     _color1 = ColorTween(
       begin: const Color.fromARGB(255, 149, 192, 255),
       end: const Color.fromARGB(255, 255, 238, 163),
@@ -53,7 +54,91 @@ class _LoginScreenState extends State<LoginScreen>
     _animationController.dispose();
     userNameController.dispose();
     userIdController.dispose();
+    emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    String usernameInput = userNameController.text.trim();
+    String userIdInput = userIdController.text.trim();
+    String emailInput = emailController.text.trim();
+
+    if (loginType == null ||
+        usernameInput.isEmpty ||
+        userIdInput.isEmpty ||
+        (loginType == "Customer" && emailInput.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all required fields")),
+      );
+      return;
+    }
+
+    try {
+      if (loginType == "Customer") {
+        QuerySnapshot customerSnapshot = await FirebaseFirestore.instance
+            .collection('Customers')
+            .where('restaurantName', isEqualTo: usernameInput)
+            .where('customerId', isEqualTo: userIdInput)
+            .where('email', isEqualTo: emailInput)
+            .limit(1)
+            .get();
+
+        if (customerSnapshot.docs.isNotEmpty) {
+          final data =
+              customerSnapshot.docs.first.data() as Map<String, dynamic>;
+          final isActive = data['isActive'] == true;
+
+          if (!isActive) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Customer account is not active")),
+            );
+            return;
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(
+                restaurantName: data['restaurantName'],
+                customerId: data['customerId'],
+                customerEmail : data['email'],
+              ),
+            ),
+          );
+          return;
+        }
+      } else if (loginType == "Agent") {
+        QuerySnapshot agentSnapshot = await FirebaseFirestore.instance
+            .collection('Agents')
+            .where('agentName', isEqualTo: usernameInput)
+            .where('agentId', isEqualTo: userIdInput)
+            .limit(1)
+            .get();
+
+        if (agentSnapshot.docs.isNotEmpty) {
+          final data = agentSnapshot.docs.first.data() as Map<String, dynamic>;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AgentHomeScreen(
+                agentId: data['agentId'],
+                agentName: data['agentName'],
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid login credentials")),
+      );
+    } catch (e) {
+      debugPrint("Login error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login failed. Please try again.")),
+      );
+    }
   }
 
   @override
@@ -92,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen>
                       style: ResponsiveTextStyles.title(context)
                           .copyWith(color: Colors.white),
                     ),
-                    SizedBox(height: screenHeight * 0.08),
+                    SizedBox(height: screenHeight * 0.05),
                     Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -102,130 +187,60 @@ class _LoginScreenState extends State<LoginScreen>
                             width: screenWidth * 0.3,
                           ),
                           SizedBox(height: screenHeight * 0.05),
-                          MyTextField(
-                            hintText: "Enter username",
-                            controller: userNameController,
+
+                          /// Styled selector for login type
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildLoginTypeButton("Customer"),
+                              SizedBox(width: screenWidth * 0.02),
+                              _buildLoginTypeButton("Agent"),
+                            ],
                           ),
                           SizedBox(height: screenHeight * 0.02),
-                          MyTextField(
-                            hintText: "Enter your id",
-                            controller: userIdController,
-                          ),
-                          SizedBox(height: screenHeight * 0.03),
-                          SizedBox(
-                            width: screenWidth * 0.5,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                String usernameInput =
-                                    userNameController.text.trim();
-                                String userIdInput =
-                                    userIdController.text.trim();
 
-                                if (usernameInput.isEmpty ||
-                                    userIdInput.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text("Please enter both fields")),
-                                  );
-                                  return;
-                                }
-
-                                try {
-                                  // Check Customers Collection
-                                  QuerySnapshot customerSnapshot =
-                                      await FirebaseFirestore.instance
-                                          .collection('Customers')
-                                          .where('restaurantName',
-                                              isEqualTo: usernameInput)
-                                          .where('customerId',
-                                              isEqualTo: userIdInput)
-                                          .limit(1)
-                                          .get();
-
-                                  if (customerSnapshot.docs.isNotEmpty) {
-                                    final data = customerSnapshot.docs.first
-                                        .data() as Map<String, dynamic>;
-                                    final isActive =
-                                        data['isActive'] == true;
-
-                                    if (!isActive) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                "Customer account is not active")),
-                                      );
-                                      return;
-                                    }
-
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => HomeScreen(
-                                          restaurantName:
-                                              data['restaurantName'],
-                                          customerId: data['customerId'],
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  // Check Agents Collection
-                                  QuerySnapshot agentSnapshot =
-                                      await FirebaseFirestore.instance
-                                          .collection('Agents')
-                                          .where('agentName',
-                                              isEqualTo: usernameInput)
-                                          .where('agentId',
-                                              isEqualTo: userIdInput)
-                                          .limit(1)
-                                          .get();
-
-                                  if (agentSnapshot.docs.isNotEmpty) {
-                                    final data = agentSnapshot.docs.first
-                                        .data() as Map<String, dynamic>;
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AgentHomeScreen(
-                                          agentId: data['agentId'],
-                                          agentName: data['agentName'],
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "Invalid login credentials")),
-                                  );
-                                } catch (e) {
-                                  debugPrint("Login error: $e");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "Login failed. Please try again.")),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                  vertical: screenHeight * 0.02,
+                          if (loginType != null) ...[
+                            MyTextField(
+                              hintText: loginType == "Customer"
+                                  ? "Enter restaurant name"
+                                  : "Enter agent name",
+                              controller: userNameController,
+                            ),
+                            SizedBox(height: screenHeight * 0.02),
+                            MyTextField(
+                              hintText: loginType == "Customer"
+                                  ? "Enter customer ID"
+                                  : "Enter agent ID",
+                              controller: userIdController,
+                            ),
+                            if (loginType == "Customer") ...[
+                              SizedBox(height: screenHeight * 0.02),
+                              MyTextField(
+                                hintText: "Enter email",
+                                controller: emailController,
+                              ),
+                            ],
+                            SizedBox(height: screenHeight * 0.03),
+                            SizedBox(
+                              width: screenWidth * 0.5,
+                              child: ElevatedButton(
+                                onPressed: _handleLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: screenHeight * 0.02,
+                                  ),
+                                ),
+                                child: Text(
+                                  "Submit",
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.045,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                "Submit",
-                                style: TextStyle(
-                                    fontSize: screenWidth * 0.045,
-                                    color: AppColors.primary),
-                              ),
                             ),
-                          ),
+                          ]
                         ],
                       ),
                     ),
@@ -236,6 +251,34 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLoginTypeButton(String type) {
+    bool isSelected = loginType == type;
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            loginType = type;
+          });
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Color.fromARGB(255, 255, 238, 163) : Colors.white,
+          foregroundColor: isSelected ? Colors.white : Color.fromARGB(255, 255, 238, 163),
+          elevation: isSelected ? 8 : 2,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          type,
+          style: ResponsiveTextStyles.body(context).copyWith( color: AppColors.Black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }

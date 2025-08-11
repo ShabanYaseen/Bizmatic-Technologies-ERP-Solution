@@ -195,20 +195,17 @@ class _AgentFeatureRequestsState extends State<AgentFeatureRequests> {
   }
 
   Future<void> _sendStatusEmail({
-    required String customerEmail,
-    required String customerName,
-    required String feature,
-    required String product,
-    required bool isApproved,
-  }) async {
-    final smtpServer = gmail('bizmaticshaban@gmail.com', 'jfhw kkvm azgz vrox');
+  required String customerEmail,
+  required String customerName,
+  required String feature,
+  required String product,
+  required bool isApproved,
+}) async {
+  final smtpServer = gmail('bizmaticshaban@gmail.com', 'jfhw kkvm azgz vrox');
 
-    final message =
-        Message()
-          ..from = Address('bizmaticshaban@gmail.com', 'Feature Request System')
-          ..recipients.add(customerEmail)
-          ..subject = 'Feature Request ${isApproved ? 'Approved' : 'Rejected'}'
-          ..text = '''
+  // Create the email content
+  final status = isApproved ? 'Approved' : 'Rejected';
+  final customerMessage = '''
 Dear $customerName,
 
 Your request for the "$feature" feature in $product has been 
@@ -220,12 +217,43 @@ Thank you,
 Support Team
 ''';
 
-    try {
-      await send(message, smtpServer);
-    } catch (e) {
-      debugPrint('Error sending email: $e');
-    }
+  final adminMessage = '''
+Feature Request $status
+
+Customer: $customerName
+Email: $customerEmail
+Product: $product
+Feature: $feature
+Status: $status
+Processed by: ${widget.agentName} (${widget.agentId})
+Time: ${DateTime.now()}
+''';
+
+  // Send to customer
+  final customerEmailMessage = Message()
+    ..from = Address('bizmaticshaban@gmail.com', 'Feature Request System')
+    ..recipients.add(customerEmail)
+    ..subject = 'Feature Request $status'
+    ..text = customerMessage;
+
+  // Send to admin (same email)
+  final adminEmailMessage = Message()
+    ..from = Address('bizmaticshaban@gmail.com', 'Feature Request System')
+    ..recipients.add('bizmaticshaban@gmail.com')
+    ..subject = 'Feature Request $status - $customerName'
+    ..text = adminMessage;
+
+  try {
+    // Send both emails
+    await Future.wait([
+      send(customerEmailMessage, smtpServer),
+      send(adminEmailMessage, smtpServer),
+    ]);
+  } catch (e) {
+    debugPrint('Error sending email: $e');
+    // You might want to show an error or log this failure
   }
+}
 
   void _showSuccessSnackbar(String action) {
     ScaffoldMessenger.of(context).showSnackBar(

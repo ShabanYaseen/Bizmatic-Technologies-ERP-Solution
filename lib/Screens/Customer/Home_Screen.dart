@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 class HomeScreen extends StatefulWidget {
   final String? restaurantName;
   final String? customerId;
+  final String? customerEmail;
 
-  const HomeScreen({super.key, this.restaurantName, this.customerId});
+  const HomeScreen({super.key, this.restaurantName, this.customerId, required this.customerEmail});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     // Define a tween for background color animation
     _backgroundColor = ColorTween(
-      begin: const Color(0xFF0D47A1),
+      begin:  const Color.fromARGB(255, 109, 107, 101),
       end: const Color(0xFF42A5F5),
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
@@ -78,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 50,),
                 Text(
                   "Hello\nDear, ${widget.restaurantName ?? 'Guest'}",
                   style: ResponsiveTextStyles.title(context).copyWith(
@@ -129,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen>
                               FeatureList(
                                 customerId: widget.customerId!,
                                 customerName: widget.restaurantName!,
-                                customerEmail: 'bizmaticshaban@gmail.com',
+                                customerEmail: widget.customerEmail!,
                               ),
                             ),
                       ),

@@ -47,8 +47,8 @@ final ProductFeatureSet gofrugalServEasy = ProductFeatureSet(
   ],
 );
 
-final ProductFeatureSet retailMasterPro = ProductFeatureSet(
-  name: "Retail Master Pro",
+final ProductFeatureSet gofrugalretaileasy = ProductFeatureSet(
+  name: "Gofrugal RetailEasy",
   versions: ["Standard", "Premium"],
   groups: [
     FeatureGroup(

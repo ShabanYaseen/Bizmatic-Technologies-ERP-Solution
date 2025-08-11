@@ -35,7 +35,7 @@ class _FeatureListState extends State<FeatureList> with SingleTickerProviderStat
   final List<ProductFeatureSet> products = [
     butterPOS,
     gofrugalServEasy,
-    retailMasterPro
+    gofrugalretaileasy,
   ];
 
   int selectedProductIndex = 0;
@@ -234,22 +234,46 @@ Customer Email: ${widget.customerEmail}
   }
 
   Future<void> _sendEmail({required String subject, required String body}) async {
-    final username = 'bizmaticshaban@gmail.com';
-    final password = 'jfhw kkvm azgz vrox';
-    final smtpServer = gmail(username, password);
+  final username = 'bizmaticshaban@gmail.com';
+  final password = 'jfhw kkvm azgz vrox';
+  final smtpServer = gmail(username, password);
 
-    final message = Message()
-      ..from = Address(username, 'Feature Request System')
-      ..recipients.add('bizmaticshaban@gmail.com')
-      ..subject = subject
-      ..text = body;
+  // Message to admin
+  final adminMessage = Message()
+    ..from = Address(username, 'Feature Request System')
+    ..recipients.add(username) // Send to admin
+    ..subject = subject
+    ..text = body;
 
-    try {
-      await send(message, smtpServer);
-    } catch (e) {
-      debugPrint('Email sending error: $e');
-    }
+  // Message to customer
+  final customerMessage = Message()
+    ..from = Address(username, 'Feature Request System')
+    ..recipients.add(widget.customerEmail)
+    ..subject = 'Feature Request Received'
+    ..text = '''
+Dear ${widget.customerName},
+
+Thank you for your feature request. We have received your request for:
+
+$body
+
+Our team will review your request and get back to you soon.
+
+Thank you,
+Support Team
+''';
+
+  try {
+    // Send both emails
+    await Future.wait([
+      send(adminMessage, smtpServer),
+      send(customerMessage, smtpServer),
+    ]);
+  } catch (e) {
+    debugPrint('Email sending error: $e');
+    // You might want to show an error or log this failure
   }
+}
 
   void _showFeatureDetails(FeatureItem feature) {
     showDialog(
