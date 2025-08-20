@@ -1,4 +1,4 @@
-# bizmatic_solutions
+# ERP_Support_Solution
 
 Features
 Our ERP Support App is designed to provide a seamless, intelligent, and comprehensive support experience. It empowers customers to find solutions instantly while ensuring smooth escalation to human agents when needed.
